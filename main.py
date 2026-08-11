@@ -26,9 +26,9 @@ def get_tasks_id(id: int):
     for task in tasks:
         if task["id"]==id:
             return task
-    """return JSONResponse(
+    return JSONResponse(
         status_code=404,
         content={"error": f"Task {id} not found"}
-    )"""
+    )
    
     
