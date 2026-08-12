@@ -15,21 +15,21 @@ tasks = [{"id": 1, "title": "Learn FastAPI", "done": False},
          {"id": 2, "title": "Build CRUD API", "done": False},
           {"id": 3, "title": "Test the API", "done": True} ]
 
-@app.get("/")
+@app.get("/", summary="Show API information")
 def hello():
     return {"name": "Task API",
             "version": "1.0",
             "endpoints": ["/tasks"]}
 
-@app.get("/health")
+@app.get("/health", summary="Check API health")
 def status():
     return {"status": "ok"}
 
-@app.get("/tasks")
+@app.get("/tasks", summary="List all tasks")
 def get_tasks():
     return tasks
 
-@app.get("/tasks/{id}")
+@app.get("/tasks/{id}", summary="Get one task")
 def get_tasks_id(id: int):
     for task in tasks:
         if task["id"]==id:
@@ -39,7 +39,7 @@ def get_tasks_id(id: int):
         content={"error": f"Task {id} not found"}
     )
 
-@app.post("/tasks", status_code=201)
+@app.post("/tasks", status_code=201, summary="Create a new task")
 def create_task(task: TaskCreate):
     if not task.title:
         return JSONResponse(
@@ -59,7 +59,7 @@ def create_task(task: TaskCreate):
 
     return new_task
 
-@app.put("/tasks/{id}")
+@app.put("/tasks/{id}", summary="Update a task")
 def update_task(id: int, update: TaskUpdate):
 
     if update.title is None and update.done is None:
@@ -83,7 +83,7 @@ def update_task(id: int, update: TaskUpdate):
         content={"error": f"Task {id} not found"}
     )
 
-@app.delete("/tasks/{id}")
+@app.delete("/tasks/{id}", summary="Delete a task")
 def delete_task(id: int):
     for task in tasks:
         if task["id"] == id:
