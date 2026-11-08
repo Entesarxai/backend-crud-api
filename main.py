@@ -57,17 +57,44 @@ def status():
 
 @app.get("/tasks", summary="List all tasks")
 def get_tasks():
-    return tasks
+
+    db = sqlite3.connect("tasks.db")
+
+    rows = db.execute(
+        "SELECT id, title, done FROM tasks"
+    ).fetchall()
+
+    db.close()
+
+    return [
+        {
+        "id": row[0],
+        "title": row[1],
+        "done": bool(row[2])
+        } 
+        for row in rows
+    ]
 
 @app.get("/tasks/{id}", summary="Get one task")
 def get_tasks_id(id: int):
-    for task in tasks:
-        if task["id"]==id:
-            return task
-    return JSONResponse(
-        status_code=404,
-        content={"error": f"Task {id} not found"}
-    )
+    db = sqlite3.connect("tasks.db")
+
+    row = db.execute(
+        "SELECT id, title, done FROM tasks WHERE id = ?",
+        (id,)
+    ).fetchone()
+    db.close()
+
+    if row is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"Task {id} not found"}
+        )
+    return {
+        "id": row[0],
+        "title": row[1],
+        "done": bool(row[2])
+    }
 
 @app.post("/tasks", status_code=201, summary="Create a new task")
 def create_task(task: TaskCreate):
