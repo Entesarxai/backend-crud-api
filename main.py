@@ -104,17 +104,22 @@ def create_task(task: TaskCreate):
             content={"error": "Title is required"}
         )
     
-    new_id = max(t["id"] for t in tasks) + 1
+    db = sqlite3.connect("tasks.db")
+    cursor = db.execute(
+        "INSERT INTO tasks (title, done) VALUES (?, ?)",
+        (task.title, 0)
+    )
 
-    new_task = {
+    new_id = cursor.lastrowid
+
+    db.commit()
+    db.close()
+
+    return {
         "id": new_id,
         "title": task.title,
         "done": False
     }
-
-    tasks.append(new_task)
-
-    return new_task
 
 @app.put("/tasks/{id}", summary="Update a task")
 def update_task(id: int, update: TaskUpdate):
