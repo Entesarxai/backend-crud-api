@@ -33,6 +33,7 @@ if count == 0:
         ("Test the API", 1)
     )
     conn.commit()
+    conn.close()
 
 class TaskCreate(BaseModel):
     title: str | None = None 
@@ -40,10 +41,6 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     title: str | None = None
     done: bool | None = None
-
-tasks = [{"id": 1, "title": "Learn FastAPI", "done": False},
-         {"id": 2, "title": "Build CRUD API", "done": False},
-          {"id": 3, "title": "Test the API", "done": True} ]
 
 @app.get("/", summary="Show API information")
 def hello():
@@ -130,29 +127,55 @@ def update_task(id: int, update: TaskUpdate):
             content={"error": "At least one field is required"}
         )
     
-    for task in tasks:
-        if task["id"] == id:
-            if update.title is not None:
-                task["title"] = update.title
+    db = sqlite3.connect("tasks.db")
 
-            if update.done is not None:
-                task["done"] = update.done
+    row = db.execute(
+    "SELECT id, title, done FROM tasks WHERE id = ?", (id,)
+    ).fetchone()
 
-            return task
-        
-    return JSONResponse(
+    if row is None:
+       db.close()
+       return JSONResponse(
         status_code=404,
         content={"error": f"Task {id} not found"}
-    )
+       )
+
+    current_title = row[1]
+    current_done = bool(row[2])
+
+    new_title = update.title if update.title is not None else current_title
+    new_done = update.done if update .done is not None else current_done
+
+    db.execute(
+        "UPDATE tasks SET title = ?, done = ? WHERE id = ?", (new_title, int(new_done), id))
+
+    db.commit()
+    db.close() 
+
+    return {
+        "id": id,
+        "title": new_title,
+        "done": new_done
+    }
 
 @app.delete("/tasks/{id}", summary="Delete a task")
 def delete_task(id: int):
-    for task in tasks:
-        if task["id"] == id:
-            tasks.remove(task)
-            return Response(status_code=204)
 
-    return JSONResponse(
-        status_code=404,
-        content={"error": f"Task {id} not found"}
+    db = sqlite3.connect("tasks.db")
+
+    cursor = db.execute(
+        "DELETE FROM tasks WHERE id = ?", (id,)
     )
+
+    if cursor.rowcount == 0:
+        db.close()
+
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"Task {id} not found"}
+        )
+
+    db.commit()
+    db.close()
+
+    return Response(status_code=204)
