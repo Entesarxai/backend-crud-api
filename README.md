@@ -1,6 +1,6 @@
 # Task API
 
-A small REST API built with Python and FastAPI for managing a to-do list.
+A REST API built with Python and FastAPI for managing a to-do list.
 
 The project demonstrates the four basic CRUD operations:
 
@@ -9,7 +9,7 @@ The project demonstrates the four basic CRUD operations:
 - **Update** tasks
 - **Delete** tasks
 
-The API stores tasks in memory, so the data is reset whenever the server is restarted.
+Tasks are stored in an SQLite database, so they remain saved when the server is restarted.
 
 ---
 
@@ -17,6 +17,7 @@ The API stores tasks in memory, so the data is reset whenever the server is rest
 
 - Python 3
 - FastAPI
+- SQLite
 - Uvicorn
 - Pydantic
 - Swagger UI
@@ -30,31 +31,29 @@ The API stores tasks in memory, so the data is reset whenever the server is rest
 
 After cloning the repository, install the required packages:
 
-    pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
+```
 
 ### 2. Start the API
 
 Run the following command:
 
-    uvicorn main:app --reload
+```bash
+uvicorn main:app --reload
+```
 
 The server will start at:
 
-    http://localhost:8000
+`http://localhost:8000`
+
+The database file (`tasks.db`) and its table are created automatically when the application starts.
 
 ### 3. Open the API
 
-**Main API**
-
-    http://localhost:8000
-
-**Health Check**
-
-    http://localhost:8000/health
-
-**Interactive Swagger Documentation**
-
-    http://localhost:8000/docs
+- **Main API:** http://localhost:8000
+- **Health Check:** http://localhost:8000/health
+- **Swagger Documentation:** http://localhost:8000/docs
 
 ---
 
@@ -76,11 +75,13 @@ The server will start at:
 
 Each task contains three fields:
 
-    {
-      "id": 1,
-      "title": "Learn FastAPI",
-      "done": false
-    }
+```json
+{
+  "id": 1,
+  "title": "Learn FastAPI",
+  "done": false
+}
+```
 
 - `id` — unique task number
 - `title` — task description
@@ -96,30 +97,33 @@ A new task can be created using `POST /tasks`.
 
 Example request:
 
-    curl -i -X POST http://localhost:8000/tasks -H "Content-Type: application/json" -d "{\"title\":\"Buy milk\"}"
+```bash
+curl -i -X POST http://localhost:8000/tasks -H "Content-Type: application/json" -d "{\"title\":\"Buy milk\"}"
+```
 
-Example response:
-
-    HTTP/1.1 201 Created
-    content-type: application/json
-
-    {"id":4,"title":"Buy milk","done":false}
+A successful request returns `201 Created` with the new task.
 
 ### Read Tasks
 
 To retrieve all tasks:
 
-    curl -i http://localhost:8000/tasks
+```bash
+curl http://localhost:8000/tasks
+```
 
 To retrieve a specific task:
 
-    curl -i http://localhost:8000/tasks/1
+```bash
+curl http://localhost:8000/tasks/1
+```
 
 ### Update a Task
 
 For example, to mark task 1 as completed:
 
-    curl -i -X PUT http://localhost:8000/tasks/1 -H "Content-Type: application/json" -d "{\"done\":true}"
+```bash
+curl -i -X PUT http://localhost:8000/tasks/1 -H "Content-Type: application/json" -d "{\"done\":true}"
+```
 
 The API returns the updated task with a `200 OK` response.
 
@@ -127,11 +131,33 @@ The API returns the updated task with a `200 OK` response.
 
 To delete task 1:
 
-    curl -i -X DELETE http://localhost:8000/tasks/1
+```bash
+curl -i -X DELETE http://localhost:8000/tasks/1
+```
 
-A successful deletion returns:
+A successful deletion returns `204 No Content`.
 
-    HTTP/1.1 204 No Content
+---
+
+## Database
+
+SQLite was chosen because it is lightweight, easy to use, and does not require a separate database server.
+
+The database is stored in a file named `tasks.db` in the project directory. The application automatically creates the database and the `tasks` table if they do not exist. It also inserts the initial tasks when the table is empty.
+
+### Example SQL Query
+
+The following query retrieves all completed tasks:
+
+```sql
+SELECT * FROM tasks WHERE done = 1;
+```
+
+In the database, `1` represents a completed task and `0` represents an incomplete task.
+
+### Database Screenshot
+
+![SQLite Database](database.png)
 
 ---
 
@@ -143,35 +169,24 @@ The API returns appropriate HTTP status codes when requests succeed or fail.
 |:---:|---|---|
 | `200` | Request successful | Reading or updating a task |
 | `201` | Resource created | Creating a task |
-| `204` | Successful deletion with no response body | Deleting a task |
+| `204` | Successful deletion | Deleting a task |
 | `400` | Invalid request | Empty update body |
 | `404` | Task not found | Requesting `/tasks/99` |
 
 ---
 
-## Swagger UI
-
-FastAPI automatically generates interactive API documentation using Swagger UI.
-
-Open:
-
-    http://localhost:8000/docs
-
-Swagger UI allows the API endpoints to be viewed and tested directly from the browser without using `curl`.
-
-![Swagger UI](swagger.png)
-
----
-
 ## Project Structure
 
-    task-api/
-    │
-    ├── main.py
-    ├── requirements.txt
-    ├── README.md
-    ├── swagger.png
-    └── .gitignore
+```text
+task-api/
+│
+├── main.py
+├── requirements.txt
+├── README.md
+├── swagger.png
+├── database.png
+└── .gitignore
+```
 
 ### Files
 
@@ -179,19 +194,17 @@ Swagger UI allows the API endpoints to be viewed and tested directly from the br
 - `requirements.txt` — Python dependencies
 - `README.md` — project documentation
 - `swagger.png` — Swagger UI screenshot
+- `database.png` — SQLite database screenshot
 - `.gitignore` — files excluded from Git
 
 ---
 
 ## Notes
 
-This project uses an **in-memory list** instead of a database. Therefore, tasks are lost when the server is stopped or restarted.
-
-This was intentional for the assignment so that the focus remains on understanding API endpoints, HTTP methods, and CRUD operations.
+The database file is created locally when the application starts and is not included in the repository. This allows anyone cloning the project to generate their own database automatically.
 
 ---
 
 ## Author
-
 Entesar Ahmed
-Backend Track — Week 2 Assignment
+Week 3 Assignment
