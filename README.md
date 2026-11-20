@@ -18,6 +18,8 @@ Tasks are stored in an SQLite database, so they remain saved when the server is 
 - Python 3
 - FastAPI
 - SQLite
+- PostgreSQL
+- Docker
 - Uvicorn
 - Pydantic
 - Swagger UI
