@@ -199,12 +199,45 @@ task-api/
 
 ---
 
-## Notes
+## Running PostgreSQL with Docker
 
-The database file is created locally when the application starts and is not included in the repository. This allows anyone cloning the project to generate their own database automatically.
+This project uses PostgreSQL 18 running inside a Docker container.
+
+### Start the database
+
+Run the following command:
+
+```bash
+docker run --name taskdb -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=tasks -p 127.0.0.1:5432:5432 -v taskdata:/var/lib/postgresql -d postgres
+```
+
+### Verify the container
+
+```bash
+docker ps
+```
+
+### Access PostgreSQL
+
+```bash
+docker exec -it taskdb psql -U postgres -d tasks
+```
+
+### Stop the database
+
+```bash
+docker stop taskdb
+```
+
+### Start it again
+
+```bash
+docker start taskdb
+```
+
+The `taskdata` Docker volume persists database data independently of the container.
 
 ---
 
 ## Author
 Entesar Ahmed
-Week 3 Assignment
